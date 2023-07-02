@@ -3,11 +3,10 @@ from matplotlib import pyplot as plt
 
 # get data
 data = np.load("h3.npy", allow_pickle=True).item()
-print(data)
 verts3d = np.array(data['verts'])
 vcolors = np.array(data['vertex_colors'])
-faces = np.array(data['faces_indices'])
-c_org = np.array(data['c_eye'])
+faces = np.array(data['face_indices'])
+c_org = np.array(data['cam_eye'])
 c_up = np.array(data['cam_up'])
 c_lookat = np.array(data['cam_lookat'])
 ka = np.array(data['ka'])
