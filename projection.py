@@ -106,7 +106,6 @@ def projection(p3d, H, W, Rows, Columns, f, cv, cK, cup):
     p2d, depth = CameraLookingAt(f, cv, cK - cv, cup, p3d)
     # get pixel coords
     n2d = rasterize(p2d, Rows, Columns, H, W)
-    n2d = n2d.T
 
     return n2d
 
