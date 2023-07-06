@@ -1,6 +1,7 @@
 import numpy as np
 from classes import edge, PhongMaterial, PointLight
 
+# calculates light of given point
 def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
     ## init
     I = np.zeros(3, 1)
@@ -32,3 +33,24 @@ def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
         I = I + mat.ks * (inner ** mat.nphong) * light.intensity.T * vcolor
 
     return np.clip(I, 0, 1)
+
+# calculates normal vectors of
+def calculate_normals(verts, faces):
+    normals = np.zeros(verts.shape)
+
+    # for each triangle
+    for face in faces.T:
+        triangle = verts[:, face]
+
+        # calculate normal of the triangle as the cross product of two edges
+        AB = triangle[:, 1] - triangle[:, 0]
+        AC = triangle[:, 2] - triangle[:, 0]
+        normal = np.cross(AB, AC)
+
+        normals[:, face] += normal
+
+    # normalize (normalize normals ha ha ha)
+    norms = np.linalg.norm(normals, axis=0)
+    normals /= norms
+
+    return normals
