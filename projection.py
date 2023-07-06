@@ -101,7 +101,7 @@ def rasterize(p2d, Rows, Columns, H, W):
     return n2d
 
 # projects 3d points using pinhole model and calculates pixel coords
-def projection(p3d, faces, vcolors, H, W, Rows, Columns, f, cv, cK, cup):
+def projection(p3d, H, W, Rows, Columns, f, cv, cK, cup):
     # project points
     p2d, depth = CameraLookingAt(f, cv, cK - cv, cup, p3d)
     # get pixel coords
