@@ -8,7 +8,7 @@ def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
     normal = normal / np.linalg.norm(normal)
 
     ## ambient light
-    I = I + mat.ka * Ia
+    I += I + mat.ka * Ia
     
     ## diffuse reflection
     # point to source vector
@@ -18,7 +18,7 @@ def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
         # inner product
         inner = np.dot(normal.flatten(), L.flatten())
 
-        I = I + mat.kd * inner * light.intensity.T * vcolor
+        I += mat.kd * inner * light.intensity.T * vcolor
 
     ## specular reflection
     # point to camera vector
@@ -30,7 +30,7 @@ def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
         temp = 2 * inner * normal - L
         inner = np.dot(temp.flatten(), V.flatten())
 
-        I = I + mat.ks * (inner ** mat.nphong) * light.intensity.T * vcolor
+        I += mat.ks * (inner ** mat.nphong) * light.intensity.T * vcolor
 
     return np.clip(I, 0, 1)
 
