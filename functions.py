@@ -8,7 +8,7 @@ def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
     normal = normal / np.linalg.norm(normal)
 
     ## ambient light
-    I += I + mat.ka * Ia
+    I += mat.ka * Ia
     
     ## diffuse reflection
     # point to source vector
