@@ -7,7 +7,8 @@ from projection import projection
 def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
     ## init
     I = np.zeros((1, 3))
-    normal = normal / np.linalg.norm(normal)
+    if np.linalg.norm(normal) != 0:
+        normal = normal / np.linalg.norm(normal)
 
     ## ambient light
     I += mat.ka * Ia
@@ -24,10 +25,10 @@ def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
         temp = 2 * inner1 * normal - L
         inner2 = np.dot(temp, V)
 
-        I += mat.kd * inner1 * light.intensity
-        I += mat.ks * (inner2 ** mat.nphong) * light.intensity
+        I += mat.kd * inner1 * light.intensity * vcolor
+        I += mat.ks * (inner2 ** mat.nphong) * light.intensity * vcolor
 
-    return np.clip(I * vcolor, 0, 1)
+    return np.clip(I, 0, 1)
 
 # calculates normal vectors of
 def calculate_normals(verts, faces):
@@ -70,7 +71,7 @@ def shade_gouraud(verts_p, verts_n, verts_c, bcoords, \
                   cam_pos, mat, lights, light_amb, X):
     Y = X
 
-    # calculate color of each vertice
+    # calculate color of each vertex
     vcolors = np.zeros((3, 3))
     for i in range(3):
         vcolors[i] = light(bcoords, verts_n[:, i], verts_c[:, i], cam_pos, \
@@ -176,6 +177,133 @@ def shade_gouraud(verts_p, verts_n, verts_c, bcoords, \
 
     return Y
 
+# implements phong shading
+def shade_phong(verts_p, verts_n, verts_c, bcoords, \
+                  cam_pos, mat, lights, light_amb, X):
+    Y = X
+
+    vcolors = np.zeros((3, 3))
+    for i in range(3):
+        vcolors[i] = light(bcoords, verts_n[:, i], verts_c[:, i], cam_pos, \
+                           mat, lights, light_amb)
+
+    # algorithm from previous exercises
+    vertices = verts_p.T
+
+    if all(vertices[0] == vertices[1]) and all(vertices[1] == vertices[2]):
+        Y[vertices[0, 1], vertices[0, 0]] = \
+            np.mean(vcolors, axis=0)
+        return Y
+
+    edges = [Edge() for _ in range(3)]
+    edges[0] = Edge(np.array([vertices[0], \
+                                 vertices[1]]))
+    edges[1] = Edge(np.array([vertices[1], \
+                                 vertices[2]]))
+    edges[2] = Edge(np.array([vertices[2], \
+                                 vertices[0]]))
+
+    y_min = min([edge.y_min[1] for edge in edges])
+    y_max = max([edge.y_max for edge in edges])
+
+    actives = 0
+    for edge in edges:
+        if edge.y_min[1] == y_min:
+            edge.active = True
+            actives = actives + 1
+    border_points = []
+
+    if actives == 3:
+        for edge in edges:
+            if edge.m == float('-inf'):
+                edge.active = False
+                actives = actives - 1
+
+    if actives == 3:
+        for i, edge in enumerate(edges):
+            if edge.m == 0:
+                for x in range(edge.vertices[0][0], edge.vertices[1][0] + 1):
+                    Y[y_min, x] = \
+                        interpolate_vectors(edge.vertices[0], edge.vertices[1],\
+                                            vcolors[i], vcolors[(i + 1) % 3], \
+                                            x, 1)
+                actives = actives - 1
+                edge.active = False
+            else:
+                border_points.append([edge.y_min[0] + 1 / edge.m, edge.m, i])
+        y_min = y_min + 1
+
+    if len(border_points) == 0:
+        for i, edge in enumerate(edges):
+            if edge.active:
+                border_points.append([edge.y_min[0], edge.m, i])
+
+    for y in range(y_min, y_max + 1):
+        border_points = sorted(border_points, key=lambda x: x[0])
+
+        color_A = interpolate_vectors(edges[border_points[0][2]].vertices[0], \
+                                      edges[border_points[0][2]].vertices[1], \
+                                      vcolors[border_points[0][2]], \
+                                      vcolors[(border_points[0][2] + 1) % 3], \
+                                      y, 2)
+        color_B = interpolate_vectors(edges[border_points[1][2]].vertices[0], \
+                                      edges[border_points[1][2]].vertices[1], \
+                                      vcolors[border_points[1][2]], \
+                                      vcolors[(border_points[1][2] + 1) % 3], \
+                                      y, 2)
+        # interpolate normal vectors
+        normal_A = interpolate_vectors(edges[border_points[0][2]].vertices[0], \
+                                       edges[border_points[0][2]].vertices[1], \
+                                       verts_n[:, border_points[0][2]], \
+                                       verts_n[:, (border_points[0][2] + 1) % 3], \
+                                       y, 2)
+        normal_B = interpolate_vectors(edges[border_points[1][2]].vertices[0], \
+                                       edges[border_points[1][2]].vertices[1], \
+                                       verts_n[:, border_points[1][2]], \
+                                       verts_n[:, (border_points[1][2] + 1) % 3], \
+                                       y, 2)
+
+        for x in range(math.floor(border_points[0][0] + 0.5), \
+                       math.floor(border_points[1][0] + 0.5) + 1):
+            color = interpolate_vectors( \
+                np.array([math.floor(border_points[0][0] + 0.5), y]), \
+                np.array([math.floor(border_points[1][0] + 0.5) + 1, y]), \
+                color_A, color_B, x, 1)
+            normal = interpolate_vectors( \
+                np.array([math.floor(border_points[0][0] + 0.5), y]), \
+                np.array([math.floor(border_points[1][0] + 0.5) + 1, y]), \
+                normal_A, normal_B, x, 1)
+            Y[y, x] = light(bcoords, normal, color, cam_pos, mat, \
+                            lights, light_amb)
+
+        if y == y_max:
+            break
+
+        for point in border_points:
+            point[0] = point[0] + 1 / point[1]
+
+        for i, edge in enumerate(edges):
+            if edge.y_min[1] == y + 1:
+                edge.active = True
+                actives = actives + 1
+                border_points.append([edge.y_min[0], edge.m, i])
+
+        if actives == 3:
+            if border_points[-1][1] == 0:
+                del border_points[-1]
+                continue
+            for i, edge in enumerate(edges):
+                if edge.y_max == y + 1:
+                    if border_points[0][2] == i:
+                        del border_points[0]
+                    else:
+                        del border_points[1]
+                    edge.active = False
+                    actives = actives - 1
+                    break
+
+    return Y
+
 # renders 3d object to 2d photo
 def render_object(shader, focal, eye, lookat, up, bg_color, M, N, H, W, \
     verts, vert_colors, faces, mat, lights, light_amb):
@@ -215,11 +343,10 @@ def render_object(shader, focal, eye, lookat, up, bg_color, M, N, H, W, \
                                 np.mean(verts[:, face], axis=1), \
                                 eye, mat, lights, light_amb, img)
     elif shader == "phong":
-        pass
-        #for face in faces.T:
-        #    img = shade_phong(n2d[:, face], normals[:, face], \
-        #                        vert_colors[:, 3], \
-        #                        np.mean(n2d[:, face], axis=1), \
-        #                        eye, mat, lights, light_amb, img)
+        for face in faces.T:
+            img = shade_phong(n2d[:, face], normals[:, face], \
+                                vert_colors[:, face], \
+                                np.mean(verts[:, face], axis=1), \
+                                eye, mat, lights, light_amb, img)
 
     return img
