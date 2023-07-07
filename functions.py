@@ -24,8 +24,9 @@ def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
 
     ## specular reflection
     # point to camera vector
+    V = (cam_pos - point) / np.linalg.norm(cam_pos - point)
     for light in lights:
-        V = (cam_pos - point) / np.linalg.norm(cam_pos - point)
+        L = (light.pos - point) / np.linalg.norm(light.pos - point)
 
         # calculate inner product
         inner = np.dot(normal.flatten(), L.flatten())

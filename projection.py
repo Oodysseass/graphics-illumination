@@ -41,7 +41,7 @@ def PinHole(f, cv, cx, cy, cz, p3d):
     p3d_ccs = ChangeCoordinateSystem(p3d, R, cv)
 
     # extract z coordinate
-    depth = p3d_ccs[2, :].T.flatten()
+    depth = p3d_ccs[2, :].flatten()
 
     # project
     x_proj = f * p3d_ccs[0, :] / depth
@@ -55,16 +55,16 @@ def CameraLookingAt(f, cv, cK, cup, p3d):
     # calculate unit vectors
     cz = cK / np.linalg.norm(cK)
 
-    t = cup - np.dot(cup.T,  cz) * cz
+    t = cup - np.dot(cup,  cz) * cz
     cy = t / np.linalg.norm(t)
 
-    cy = cy.T
-    cz = cz.T
+    cy = cy
+    cz = cz
 
     cx = np.cross(cy, cz)
 
     # use pinhole
-    p2d, depth = PinHole(f, cv.T, cx, cy, cz, p3d)
+    p2d, depth = PinHole(f, cv, cx, cy, cz, p3d)
 
     return p2d, depth
 
