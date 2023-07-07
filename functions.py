@@ -1,6 +1,7 @@
 import numpy as np
-from classes import edge, PhongMaterial, PointLight
+from classes import PhongMaterial, PointLight
 from projection import projection
+from shaders import shade_gouraud, shade_phong
 
 # calculates light of given point
 def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
@@ -59,8 +60,11 @@ def calculate_normals(verts, faces):
 # renders 3d object to 2d photo
 def render_object(shader, focal, eye, lookat, up, bg_color, M, N, H, W, \
     verts, vert_colors, faces, mat, n, lights, light_amb):
+    # calculate normal vectors
+    normals = calculate_normals(verts, faces)
+
     # get pixel coordinates of points
-    n2d = projection(verts, H, W, M, N, focal, eye, lookat, up)
+    n2d, depth = projection(verts, H, W, M, N, focal, eye, lookat, up)
 
     # find the points outside the photo
     outside_points = np.logical_or.reduce((n2d[0] < 0, n2d[0] > N - 1, \
@@ -72,5 +76,30 @@ def render_object(shader, focal, eye, lookat, up, bg_color, M, N, H, W, \
     # remove the points and corresponding triangles
     n2d = np.delete(n2d, to_remove, axis=1)
     faces = faces[:, ~np.isin(faces, to_remove).any(axis=0)]
+
+    # calculate depth of each triagle
+    triangles_depth = np.array(np.mean(depth[faces.T], axis = 1))
+
+    # sort faces triangles depth
+    indices = np.flip(np.argsort(triangles_depth))
+    triangles_depth = triangles_depth[indices]
+    faces = faces[:, indices]
+
+    # initialize image to background color
+    img = np.ones((M, N, 3)) * bg_color
+
+    # shade each triangle accordingly
+    if shader == "gouraud":
+        for face in faces.T:
+            img = shade_gouraud(n2d[:, face], normals[:, face], \
+                                vert_colors[:, 3], \
+                                np.mean(n2d[:, face], axis=1), \
+                                eye, mat, lights, light_amb, img)
+    elif shader == "phong":
+        for face in faces.T:
+            img = shade_phong(n2d[:, face], normals[:, face], \
+                                vert_colors[:, 3], \
+                                np.mean(n2d[:, face], axis=1), \
+                                eye, mat, lights, light_amb, img)
 
     return img

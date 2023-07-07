@@ -106,5 +106,4 @@ def projection(p3d, H, W, Rows, Columns, f, cv, cK, cup):
     # get pixel coords
     n2d = rasterize(p2d, Rows, Columns, H, W)
 
-    return n2d
-
+    return n2d, depth
