@@ -19,25 +19,6 @@ def rotmat(theta, u):
 
     return R
 
-# rotates and moves point c_p
-def RotateTranslate(c_p, theta, u, A, t):
-    # get matrix
-    R = rotmat(theta, u)
-
-    # move to A
-    c_p = c_p.T - A
-
-    # rotate
-    c_p = np.dot(R, c_p.T)
-
-    # move back to starting system
-    c_q = c_p.T + A
-
-    # displace by t
-    c_q = c_q + t
-
-    return c_q.T
-
 # calculates new coordinates of c_p
 # when we move and rotate start point of system
 def ChangeCoordinateSystem(c_p, R, c_0):
@@ -60,12 +41,12 @@ def PinHole(f, cv, cx, cy, cz, p3d):
     p3d_ccs = ChangeCoordinateSystem(p3d, R, cv)
 
     # extract z coordinate
-    depth = p3d_ccs[2, :].T.flatten()
+    depth = p3d_ccs[2, :].flatten()
 
     # project
     x_proj = f * p3d_ccs[0, :] / depth
     y_proj = f * p3d_ccs[1, :] / depth
-    p2d = np.array([x_proj[0, :], y_proj[0,:]])
+    p2d = np.array([x_proj, y_proj])
 
     return p2d, depth
 
@@ -74,16 +55,16 @@ def CameraLookingAt(f, cv, cK, cup, p3d):
     # calculate unit vectors
     cz = cK / np.linalg.norm(cK)
 
-    t = cup - np.dot(cup.T,  cz) * cz
+    t = cup - np.dot(cup,  cz) * cz
     cy = t / np.linalg.norm(t)
 
-    cy = cy.T
-    cz = cz.T
+    cy = cy
+    cz = cz
 
     cx = np.cross(cy, cz)
 
     # use pinhole
-    p2d, depth = PinHole(f, cv.T, cx, cy, cz, p3d)
+    p2d, depth = PinHole(f, cv, cx, cy, cz, p3d)
 
     return p2d, depth
 
@@ -106,5 +87,4 @@ def projection(p3d, H, W, Rows, Columns, f, cv, cK, cup):
     # get pixel coords
     n2d = rasterize(p2d, Rows, Columns, H, W)
 
-    return n2d
-
+    return n2d, depth
