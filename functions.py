@@ -1,5 +1,6 @@
 import numpy as np
 from classes import edge, PhongMaterial, PointLight
+from projection import projection
 
 # calculates light of given point
 def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
@@ -62,7 +63,8 @@ def render_object(shader, focal, eye, lookat, up, bg_color, M, N, H, W, \
     n2d = projection(verts, H, W, M, N, focal, eye, lookat, up)
 
     # find the points outside the photo
-    outside_points = np.logical_or.reduce((n2d[0] < 0, n2d[0] > N - 1, n2d[1] < 0, n2d[1] > M - 1))
+    outside_points = np.logical_or.reduce((n2d[0] < 0, n2d[0] > N - 1, \
+                                           n2d[1] < 0, n2d[1] > M - 1))
 
     # get the indices of those points
     to_remove = np.where(outside_points)[0]

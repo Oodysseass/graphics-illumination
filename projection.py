@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from edge import Edge
 
 # calculates rotation matrix around an axis
 def rotmat(theta, u):
