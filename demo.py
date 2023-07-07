@@ -1,5 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from functions import render_object
+from classes import PhongMaterial, PointLight
 
 # get data
 data = np.load("h3.npy", allow_pickle=True).item()
@@ -19,5 +21,19 @@ Ia = np.array(data['Ia'])
 M = np.array(data['M'])
 N = np.array(data['N'])
 W = np.array(data['W'])
+H = np.array(data['H'])
 bg_color = np.array(data['bg_color'])
 focal = data['focal']
+
+# init scene
+mat = PhongMaterial(ka, kd, ks, phong)
+lights = []
+for i in range(len(light_pos)):
+    lights.append(PointLight(light_pos[i], light_val[i]))
+
+# shoooooooot
+img = render_object("gouraud", focal, c_org, c_lookat, c_up, bg_color, M, N, \
+                    H, W, verts3d, vcolors, faces, mat, lights, Ia)
+plt.imsave('0.jpg', img)
+#plt.imshow(img)
+#plt.show()

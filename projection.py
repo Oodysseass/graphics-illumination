@@ -19,25 +19,6 @@ def rotmat(theta, u):
 
     return R
 
-# rotates and moves point c_p
-def RotateTranslate(c_p, theta, u, A, t):
-    # get matrix
-    R = rotmat(theta, u)
-
-    # move to A
-    c_p = c_p.T - A
-
-    # rotate
-    c_p = np.dot(R, c_p.T)
-
-    # move back to starting system
-    c_q = c_p.T + A
-
-    # displace by t
-    c_q = c_q + t
-
-    return c_q.T
-
 # calculates new coordinates of c_p
 # when we move and rotate start point of system
 def ChangeCoordinateSystem(c_p, R, c_0):
@@ -65,7 +46,7 @@ def PinHole(f, cv, cx, cy, cz, p3d):
     # project
     x_proj = f * p3d_ccs[0, :] / depth
     y_proj = f * p3d_ccs[1, :] / depth
-    p2d = np.array([x_proj[0, :], y_proj[0,:]])
+    p2d = np.array([x_proj, y_proj])
 
     return p2d, depth
 

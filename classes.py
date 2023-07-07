@@ -48,9 +48,6 @@ class PhongMaterial:
 
 class PointLight:
     def __init__(self, pos: np.ndarray, intensity: np.ndarray):
-        assert pos.shape == (1, 3)
-        assert intensity.shape == (1, 3)
-        
         self.pos = pos
         self.intensity = intensity
 
