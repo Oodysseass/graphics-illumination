@@ -32,9 +32,9 @@ for i in range(len(light_pos)):
     lights.append(PointLight(light_pos[i], light_val[i]))
 
 # shoooooooot
-#img = render_object("gouraud", focal, c_org, c_lookat, c_up, bg_color, M, N, \
-#                    H, W, verts3d, vcolors, faces, mat, lights, Ia)
-#plt.imsave('0.jpg', img)
+img = render_object("gouraud", focal, c_org, c_lookat, c_up, bg_color, M, N, \
+                    H, W, verts3d, vcolors, faces, mat, lights, Ia)
+plt.imsave('0.jpg', img)
 
 img = render_object("phong", focal, c_org, c_lookat, c_up, bg_color, M, N, \
                     H, W, verts3d, vcolors, faces, mat, lights, Ia)

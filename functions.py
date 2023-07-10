@@ -7,12 +7,10 @@ from projection import projection
 def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
     ## init
     I = np.zeros((1, 3))
-    if np.linalg.norm(normal) != 0:
-        normal = normal / np.linalg.norm(normal)
 
     ## ambient light
     I += mat.ka * Ia
-    
+
     ## diffuse and specular reflection
     # point to camera vector
     V = (cam_pos - point) / np.linalg.norm(cam_pos - point)
@@ -62,7 +60,6 @@ def interpolate_vectors(p1, p2, V1, V2, xy, dim):
         l = (xy - p1[1]) / (p2[1] - p1[1])
 
     V = (1 - l) * V1 + l * V2
-    V = np.clip(V, 0, 1)
 
     return V
 
@@ -223,10 +220,15 @@ def shade_phong(verts_p, verts_n, verts_c, bcoords, \
         for i, edge in enumerate(edges):
             if edge.m == 0:
                 for x in range(edge.vertices[0][0], edge.vertices[1][0] + 1):
-                    Y[y_min, x] = \
-                        interpolate_vectors(edge.vertices[0], edge.vertices[1],\
-                                            vcolors[i], vcolors[(i + 1) % 3], \
-                                            x, 1)
+                    color = interpolate_vectors(edge.vertices[0], \
+                                            edge.vertices[1], vcolors[i], \
+                                            vcolors[(i + 1) % 3], x, 1)
+                    normal = interpolate_vectors(edge.vertices[0], \
+                                            edge.vertices[1], verts_n[i], \
+                                            verts_n[(i + 1) % 3], x, 1)
+                    Y[y_min, x] = light(bcoords, normal, color, cam_pos, mat,
+                                        lights, light_amb)
+
                 actives = actives - 1
                 edge.active = False
             else:
