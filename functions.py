@@ -52,14 +52,9 @@ def calculate_normals(verts, faces):
     return normals
 
 def interpolate_vectors(p1, p2, V1, V2, xy, dim):
-    if dim == 1:
-        if p1[0] == p2[0]:
-            return V1
-        l = (xy - p1[0]) / (p2[0] - p1[0])
-    else:
-        if p1[1] == p2[1]:
-            return V1
-        l = (xy - p1[1]) / (p2[1] - p1[1])
+    if p1[dim - 1] == p2[dim - 1]:
+        return V1
+    l = (xy - p1[dim - 1]) / (p2[dim - 1] - p1[dim -1 ])
 
     V = (1 - l) * V1 + l * V2
 
