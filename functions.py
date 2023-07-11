@@ -52,14 +52,9 @@ def calculate_normals(verts, faces):
     return normals
 
 def interpolate_vectors(p1, p2, V1, V2, xy, dim):
-    if dim == 1:
-        if p1[0] == p2[0]:
-            return V1
-        l = (xy - p1[0]) / (p2[0] - p1[0])
-    else:
-        if p1[1] == p2[1]:
-            return V1
-        l = (xy - p1[1]) / (p2[1] - p1[1])
+    if p1[dim - 1] == p2[dim - 1]:
+        return V1
+    l = (xy - p1[dim - 1]) / (p2[dim - 1] - p1[dim -1 ])
 
     V = (1 - l) * V1 + l * V2
 
@@ -181,13 +176,11 @@ def shade_phong(verts_p, verts_n, verts_c, bcoords, \
                   cam_pos, mat, lights, light_amb, X):
     Y = X
 
-    vcolors = np.zeros((3, 3))
-    for i in range(3):
-        vcolors[i] = light(bcoords, verts_n[:, i], verts_c[:, i], cam_pos, \
-                           mat, lights, light_amb)
-
     # algorithm from previous exercises
+    # interpolation in normal vectors is added wherever
+    # interpolation for color already existed
     vertices = verts_p.T
+    vcolors = verts_c.T
 
     if all(vertices[0] == vertices[1]) and all(vertices[1] == vertices[2]):
         Y[vertices[0, 1], vertices[0, 0]] = \
@@ -226,8 +219,8 @@ def shade_phong(verts_p, verts_n, verts_c, bcoords, \
                                             edge.vertices[1], vcolors[i], \
                                             vcolors[(i + 1) % 3], x, 1)
                     normal = interpolate_vectors(edge.vertices[0], \
-                                            edge.vertices[1], verts_n[i], \
-                                            verts_n[(i + 1) % 3], x, 1)
+                                            edge.vertices[1], verts_n[:, i], \
+                                            verts_n[:, (i + 1) % 3], x, 1)
                     Y[y_min, x] = light(bcoords, normal, color, cam_pos, mat,
                                         lights, light_amb)
 
@@ -344,13 +337,13 @@ def render_object(shader, focal, eye, lookat, up, bg_color, M, N, H, W, \
         for face in faces.T:
             img = shade_gouraud(n2d[:, face], normals[:, face], \
                                 vert_colors[:, face], \
-                                np.mean(verts[:, face], axis=1), \
+                                np.mean(verts[:, face], axis=0), \
                                 eye, mat, lights, light_amb, img)
     elif shader == "phong":
         for face in faces.T:
             img = shade_phong(n2d[:, face], normals[:, face], \
                                 vert_colors[:, face], \
-                                np.mean(verts[:, face], axis=1), \
+                                np.mean(verts[:, face], axis=0), \
                                 eye, mat, lights, light_amb, img)
 
     return img
