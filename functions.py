@@ -72,7 +72,7 @@ def shade_gouraud(verts_p, verts_n, verts_c, bcoords, \
                            mat, lights, light_amb)
 
     # algorithm from previous exercises
-    vertices = verts_p.T
+    vertices = verts_p
 
     if all(vertices[0] == vertices[1]) and all(vertices[1] == vertices[2]):
         Y[vertices[0, 1], vertices[0, 0]] = \
@@ -182,7 +182,7 @@ def shade_phong(verts_p, verts_n, verts_c, bcoords, \
                            mat, lights, light_amb)
 
     # algorithm from previous exercises
-    vertices = verts_p.T
+    vertices = verts_p
 
     if all(vertices[0] == vertices[1]) and all(vertices[1] == vertices[2]):
         Y[vertices[0, 1], vertices[0, 0]] = \
@@ -337,15 +337,15 @@ def render_object(shader, focal, eye, lookat, up, bg_color, M, N, H, W, \
     # shade each triangle accordingly
     if shader == "gouraud":
         for face in faces.T:
-            img = shade_gouraud(n2d[:, face], normals[:, face], \
+            img = shade_gouraud(n2d[:, face].T, normals[:, face], \
                                 vert_colors[:, face], \
-                                np.mean(verts[:, face], axis=1), \
+                                np.mean(verts[:, face], axis=0), \
                                 eye, mat, lights, light_amb, img)
     elif shader == "phong":
         for face in faces.T:
-            img = shade_phong(n2d[:, face], normals[:, face], \
+            img = shade_phong(n2d[:, face].T, normals[:, face], \
                                 vert_colors[:, face], \
-                                np.mean(verts[:, face], axis=1), \
+                                np.mean(verts[:, face], axis=0), \
                                 eye, mat, lights, light_amb, img)
 
     return img
