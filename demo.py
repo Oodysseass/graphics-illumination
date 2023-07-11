@@ -26,16 +26,58 @@ bg_color = np.array(data['bg_color'])
 focal = data['focal']
 
 # init scene
-mat = PhongMaterial(ka, kd, ks, phong)
+mat = PhongMaterial(ka, 0, 0, phong)
 lights = []
 for i in range(len(light_pos)):
     lights.append(PointLight(light_pos[i], light_val[i]))
 
 # shoooooooot
+# gouraud
 img = render_object("gouraud", focal, c_org, c_lookat, c_up, bg_color, M, N, \
                     H, W, verts3d, vcolors, faces, mat, lights, Ia)
-plt.imsave('0.jpg', img)
+plt.imsave('0.jpg', img[::-1])
 
+mat.ka = 0
+mat.kd = kd
+img = render_object("gouraud", focal, c_org, c_lookat, c_up, bg_color, M, N, \
+                    H, W, verts3d, vcolors, faces, mat, lights, Ia)
+plt.imsave('1.jpg', img[::-1])
+
+mat.kd = 0
+mat.ks = ks
+img = render_object("gouraud", focal, c_org, c_lookat, c_up, bg_color, M, N, \
+                    H, W, verts3d, vcolors, faces, mat, lights, Ia)
+plt.imsave('2.jpg', img[::-1])
+
+mat.ka = ka
+mat.kd = kd
+mat.ks = ks
+img = render_object("gouraud", focal, c_org, c_lookat, c_up, bg_color, M, N, \
+                    H, W, verts3d, vcolors, faces, mat, lights, Ia)
+plt.imsave('3.jpg', img[::-1])
+
+# phong
+mat.ka = ka
+mat.kd = mat.ks = 0
 img = render_object("phong", focal, c_org, c_lookat, c_up, bg_color, M, N, \
                     H, W, verts3d, vcolors, faces, mat, lights, Ia)
-plt.imsave('1.jpg', img)
+plt.imsave('4.jpg', img[::-1])
+
+mat.ka = 0
+mat.kd = kd
+img = render_object("phong", focal, c_org, c_lookat, c_up, bg_color, M, N, \
+                    H, W, verts3d, vcolors, faces, mat, lights, Ia)
+plt.imsave('5.jpg', img[::-1])
+
+mat.kd = 0
+mat.ks = ks
+img = render_object("phong", focal, c_org, c_lookat, c_up, bg_color, M, N, \
+                    H, W, verts3d, vcolors, faces, mat, lights, Ia)
+plt.imsave('6.jpg', img[::-1])
+
+mat.ka = ka
+mat.kd = kd
+mat.ks = ks
+img = render_object("phong", focal, c_org, c_lookat, c_up, bg_color, M, N, \
+                    H, W, verts3d, vcolors, faces, mat, lights, Ia)
+plt.imsave('7.jpg', img[::-1])
