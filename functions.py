@@ -176,13 +176,11 @@ def shade_phong(verts_p, verts_n, verts_c, bcoords, \
                   cam_pos, mat, lights, light_amb, X):
     Y = X
 
-    vcolors = np.zeros((3, 3))
-    for i in range(3):
-        vcolors[i] = light(bcoords, verts_n[:, i], verts_c[:, i], cam_pos, \
-                           mat, lights, light_amb)
-
     # algorithm from previous exercises
+    # interpolation in normal vectors is added wherever
+    # interpolation for color already existed
     vertices = verts_p
+    vcolors = verts_c.T
 
     if all(vertices[0] == vertices[1]) and all(vertices[1] == vertices[2]):
         Y[vertices[0, 1], vertices[0, 0]] = \
@@ -221,8 +219,8 @@ def shade_phong(verts_p, verts_n, verts_c, bcoords, \
                                             edge.vertices[1], vcolors[i], \
                                             vcolors[(i + 1) % 3], x, 1)
                     normal = interpolate_vectors(edge.vertices[0], \
-                                            edge.vertices[1], verts_n[i], \
-                                            verts_n[(i + 1) % 3], x, 1)
+                                            edge.vertices[1], verts_n[:, i], \
+                                            verts_n[:, (i + 1) % 3], x, 1)
                     Y[y_min, x] = light(bcoords, normal, color, cam_pos, mat,
                                         lights, light_amb)
 
