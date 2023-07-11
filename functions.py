@@ -28,7 +28,7 @@ def light(point, normal, vcolor, cam_pos, mat, lights, Ia):
 
     return np.clip(I, 0, 1)
 
-# calculates normal vectors of
+# calculates normal vectors of vertices
 def calculate_normals(verts, faces):
     normals = np.zeros(verts.shape)
 
@@ -41,7 +41,9 @@ def calculate_normals(verts, faces):
         AC = triangle[:, 2] - triangle[:, 0]
         normal = np.cross(AB, AC)
 
-        normals[:, face] += normal
+        normals[:, face[0]] += normal
+        normals[:, face[1]] += normal
+        normals[:, face[2]] += normal
 
     # normalize (normalize normals ha ha ha)
     norms = np.linalg.norm(normals, axis=0)
