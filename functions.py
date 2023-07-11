@@ -183,8 +183,9 @@ def shade_phong(verts_p, verts_n, verts_c, bcoords, \
     vcolors = verts_c.T
 
     if all(vertices[0] == vertices[1]) and all(vertices[1] == vertices[2]):
-        Y[vertices[0, 1], vertices[0, 0]] = \
-            np.mean(vcolors, axis=0)
+        Y[vertices[0, 1], vertices[0, 0]] = light(bcoords, verts_n[:, 0], \
+                                                  verts_c, cam_pos, mat, \
+                                                  lights, light_amb)
         return Y
 
     edges = [Edge() for _ in range(3)]
